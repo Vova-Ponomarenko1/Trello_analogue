@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/BroadMenuCss.css">
+  <title>Board Details</title>
+</head>
+<body>
+
+<div id="sidebar">
+  <h2>Boards</h2>
+  <button class="button-create-board" onclick="createBoard()">Create board</button>
+  <div th:each="board : ${boards}" class="board" th:attr="data-boardId=${board.id}">
+    <div class="" th:onclick="'loadBoardDetails(\'' + ${board.id} + '\')'">
+      <span th:style="'color: black;'" th:text="${board.boardName}" ></span>
+    </div>
+    <div class="board-options">
+      <button onclick="toggleOptions(this)" th:attr="data-boardId=${board.id}">Options</button>
+      <div class="options-menu">
+        <button th:onclick="'openRenameBoardDialog(\'' + ${board.id} + '\')'">Rename</button>
+        <button th:onclick="'deleteBoard(\'' + ${board.id} + '\')'">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function createBoard() {
+    var boardName = prompt("Enter the name for the new board:");
+
+    if (boardName === null || boardName.trim() === '') {
+      alert('Board creation canceled or empty name provided.');
+      return;
+    }
+
+    fetch('/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: boardName,
+    })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server response:', data);
+
+            })
+            .catch(error => {
+              console.error('Error creating board:', error);
+            });
+
+    reloadPage();
+  }
+
+
+
+  function toggleOptions(button) {
+    const optionsMenu = button.nextElementSibling;
+    optionsMenu.classList.toggle('show');
+  }
+
+  function deleteBoard(boardId) {
+    fetch(`/delete/${boardId}`, {
+      method: 'DELETE',
+    })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server response:', data);
+            })
+            .catch(error => {
+              console.error('Error deleting board:', error);
+            });
+    window.location.href = `/boards`;
+  }
+
+
+
+  function openRenameBoardDialog(boardId) {
+    const newName = prompt("Enter the new name for the board:");
+
+    if (newName !== null) {
+      updateNameBoard(boardId, newName);
+      reloadPage();
+    }
+  }
+
+  function updateNameBoard(boardId, newName) {
+    fetch(`/updateNameBoard/${boardId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ newName: newName }),
+    })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server response:', data);
+            })
+            .catch(error => {
+              console.error('Error updating board name:', error);
+            });
+    reloadPage();
+  }
+  function loadBoardDetails(boardId) {
+    window.location.href = `/boards/${boardId}`;
+  }
+
+</script>
+
+
+<div id="board-container">
+  <h1>Board Details</h1>
+  <button class="create-new-column" th:attr="onclick='createNewColumn(\'' + ${boardId} + '\')'">Create new column</button>
+  <div th:if="${not #lists.isEmpty(columns)}">
+    <div class="column-container" th:each="columnList, colListStat : ${columns}" th:with="colIndex=${colListStat.index}">
+      <div th:each="column, colStat : ${columnList}" class="column" th:id="${'column-' + colIndex + '-' + colStat.index}"
+           draggable="true" th:attr="data-boardId=${boardId}, data-columnId=${column.id}">
+        <button th:attr="data-columnId=${column.id}" onclick="deleteColumn(this)">Delete</button>
+        <h3 th:text="${column.name}" contenteditable="true" onclick="startEditing(this)" th:attr="data-columnId=${column.id}"></h3>
+        <div class="list" draggable="true">
+          <div th:each="task : ${column.tasks}">
+            <div class="task-box" th:attr="data-taskId=${task.taskId}" th:onclick="'openTaskDetails(\'' + ${task.taskId} + '\')'">
+              <h2 th:text="${task.taskName}"></h2>
+            </div>
+          </div>
+        </div>
+        <button th:attr="onclick='openNewTaskForm(\'' + ${column.id} + '\')'">New Task</button>
+        <div th:id="'taskForm-' + ${column.id}" style="display: none;">
+          <form th:onsubmit="'createTask(event, \'' + ${column.id} + '\')'">
+            <label for="taskName">Task Name:</label>
+            <input type="text" id="taskName" name="taskName" required>
+            <br>
+            <label for="taskDescription">Task Description:</label>
+            <textarea id="taskDescription" name="taskDescription" required></textarea>
+            <br>
+            <button type="submit" onclick="reloadPage()">Create Task</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button th:unless="${not #lists.isEmpty(columns)}" onclick="createNewColumn()">Create Column</button>
+</div>
+
+<script>
+  function openNewTaskForm(columnId) {
+    document.getElementById(`taskForm-${columnId}`).style.display = 'block';
+  }
+
+  function createTask(event, columnId) {
+    event.preventDefault();
+    const taskName = document.querySelector(`#taskForm-${columnId} #taskName`).value;
+    const taskDescription = document.querySelector(`#taskForm-${columnId} #taskDescription`).value;
+
+    const formData = {
+      taskName: taskName,
+      taskDescription: taskDescription
+    };
+
+    fetch(`/api/task/create/${columnId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server response:', data);
+
+              fetch(`/boards/${boardId}`)
+                      .then(response => response.text())
+                      .then(html => {
+                        document.getElementById('board-container').innerHTML = html;
+                      })
+                      .catch(error => {
+                        console.error('Error updating board:', error);
+                      });
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+
+    document.getElementById(`taskForm-${columnId}`).style.display = 'none';
+  }
+
+</script>
+
+<script>
+  /* Зміна імені*/
+  function startEditing(element) {
+    element.contentEditable = "true";
+    element.focus();
+    element.addEventListener("blur", function () {
+      element.contentEditable = "false";
+
+      updateColumnName(element);
+    });
+  }
+
+  function updateColumnName(element) {
+    const columnId = element.getAttribute('data-columnId') || element.dataset.columnId;
+    const newName = element.innerText;
+
+    fetch(`/api/column/updateName/${columnId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ newName: newName }),
+    })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server response:', data);
+            })
+            .catch(error => {
+              console.error('Error updating column name:', error);
+            });
+  }
+
+
+
+  function deleteColumn(element) {
+    const columnId = element.getAttribute('data-columnId');
+
+    fetch(`/api/column/delete/${columnId}`, {
+      method: 'DELETE',
+    })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server response:', data);
+            })
+            .catch(error => {
+              console.error('Error deleting column:', error);
+            });
+  }
+
+  function createNewColumn(boardId) {
+    const columnName = prompt('Enter the name for the new column:', '');
+
+    if (columnName === null || columnName.trim() === '') {
+      alert('Column creation canceled or empty name provided.');
+      return;
+    }
+    fetch(`/api/column/create/${boardId}`, {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({ columnName: columnName }),
+       })
+       .then(response => response.json())
+       .then(data => {
+         console.log('Server response:', data);
+       })
+       .catch(error => {
+         console.error('Error creating column:', error);
+       });
+  }
+
+</script>
+
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const columnContainer = document.querySelector(".column-container");
+    const lists = document.querySelectorAll(".list");
+
+    new Sortable(columnContainer, {
+      group: "board",
+      animation: 150,
+      ghostClass: "drag-over",
+      onEnd: function (event) {
+        synchronizeColumnPositions(event);
+      },
+    });
+
+    lists.forEach(function (list) {
+      new Sortable(list, {
+        group: "list",
+        animation: 150,
+        ghostClass: "drag-over",
+        onEnd: function (event) {
+          synchronizeTaskPositions();
+        },
+      });
+    });
+
+    function synchronizeColumnPositions(event) {
+      const positions = Array.from(columnContainer.children).map(function (column, index) {
+        return {
+          columnId: parseInt(column.getAttribute("data-columnId")),
+          position: index,
+          boardId: parseInt(column.getAttribute("data-boardId"))
+        };
+      });
+
+      fetch("/api/column/boards/synchronize-column-positions", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(positions),
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+              })
+              .then(data => {
+                console.log(data);
+              })
+              .catch(error => {
+                console.error('Fetch error:', error);
+              });
+    }
+
+    function synchronizeTaskPositions() {
+      const lists = document.querySelectorAll(".list");
+
+      const positions = [];
+      lists.forEach(function (list) {
+        const columnId = list.closest(".column").getAttribute("data-columnId");
+        const taskBoxes = list.querySelectorAll(".task-box");
+
+        taskBoxes.forEach(function (task, index) {
+          positions.push({
+            taskId: parseInt(task.getAttribute("data-taskId")),
+            columnId: parseInt(columnId),
+            position: index
+          });
+        });
+      });
+
+      fetch("/api/task/boards/synchronize-task-positions", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(positions),
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+              })
+              .then(data => {
+                console.log(data);
+              })
+              .catch(error => {
+                console.error('Fetch error:', error);
+              });
+    }
+
+  });
+</script>
+
+<div id="taskPopup" class="popup" th:style="'color: black;'">
+  <button class="delete-task-button" onblur="sendTaskDelete('popupTaskDelete')"></button>
+  <h2 id="popupTaskName"  contenteditable="true" onblur="sendTaskName('popupTaskName')"></h2>
+  <p id="popupTaskDescription"  contenteditable="true" onblur="saveTaskDescription('popupTaskDescription')"></p>
+  <button onclick="closePopup()">Close</button>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+
+
+
+
+
+<script>
+  //зміна данних таски імя та опис
+  function sendTaskDelete(elementId, taskIdNum) {
+    console.log("delete met")
+    const taskIdString = taskIdNum.toString();
+    const taskId = parseInt(taskIdString, 10);
+
+    if (isNaN(taskId)) {
+      console.error('Invalid taskId:', taskIdString);
+      return;
+    }
+    fetch(`/api/task/delete/${taskId}`, {
+      method: 'DELETE',
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`Error deleting task ${taskId}: ${response.statusText}`);
+              }
+              console.log(`Task ${taskId} deleted successfully`);
+            })
+            .catch(error => {
+              console.error('Error deleting task:', error);
+            });
+  }
+
+  function sendTaskName(elementId, taskId) {
+    const taskIdString = taskId.toString();
+    const taskIdNum = parseInt(taskIdString, 10);
+
+    if (isNaN(taskIdNum)) {
+      console.error('Invalid taskId:', taskIdString);
+      return;
+    }
+    const taskNameElement = document.getElementById(elementId);
+
+    taskNameElement.onblur = function () {
+      const taskName = taskNameElement.innerText;
+      console.log(taskIdNum);
+      fetch('/api/task/' + taskIdNum + '/name', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ taskName: taskName }),
+      })
+              .then(response => response.json()
+              )
+              .then(data => {
+                console.log('Task name updated:', data);
+              })
+              .catch(error => {
+                console.error('Error updating task name:', error);
+              });
+    };
+
+  }
+
+
+  function saveTaskDescription(elementId, taskId) {
+    const taskIdString = taskId.toString();
+    const taskIdNum = parseInt(taskIdString, 10);
+
+    if (isNaN(taskIdNum)) {
+      console.error('Invalid taskId:', taskIdString);
+      return;
+    }
+    const taskDescriptionElement = document.getElementById(elementId);
+
+    taskDescriptionElement.onblur = function () {
+      const taskDescription = taskDescriptionElement.innerText;
+      console.log(taskIdNum);
+      fetch('/api/task/' + taskIdNum + '/description', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ taskDescription: taskDescription }),
+      })
+              .then(response => response.json())
+              .then(data => {
+                console.log('Task description updated:', data);
+              })
+              .catch(error => {
+                console.error('Error updating task description:', error);
+              });
+
+    };
+
+  }
+</script>
+
+<script>
+
+  function openTaskDetails(taskId) {
+    fetch('/api/task/' + taskId)
+            .then(response => response.json())
+            .then(data => {
+              document.getElementById('popupTaskName').innerText = data.taskName;
+              document.getElementById('popupTaskDescription').innerText = data.taskDescription;
+
+              sendTaskName('popupTaskName', taskId);
+              saveTaskDescription('popupTaskDescription', taskId);
+              document.querySelector('.delete-task-button').addEventListener('click', function() {
+                sendTaskDelete('popupTaskDelete', taskId);
+              });
+              document.getElementById('taskPopup').style.display = 'block';
+              document.getElementById('overlay').style.display = 'block';
+            })
+            .catch(error => {
+              console.error('Error fetching task details:', error);
+            });
+  }
+
+  function closePopup() {
+    location.reload();
+    document.getElementById('taskPopup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+  function reloadPage() {
+    setTimeout(function () {
+      location.reload();
+    }, 100);
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+
+
+<script>
+  /* перетягування КОЛОНОК
+  document.addEventListener("DOMContentLoaded", function () {
+    var columns = document.querySelectorAll(".column");
+
+    new Sortable(document.querySelector(".column-container"), {
+      group: "board",
+      animation: 150,
+      ghostClass: "drag-over",
+      onEnd: function (event) {
+        synchronizePositions();
+      },
+    });
+
+    function synchronizePositions() {
+      var positions = Array.from(document.querySelectorAll(".column")).map(function (column, index) {
+        return {
+          columnId: parseInt(column.getAttribute("data-columnId")),
+          position: index,
+          boardId: parseInt(column.getAttribute("data-boardId"))
+        };
+      });
+
+      fetch("/boards/synchronize-column-positions", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(positions),
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text();
+              })
+              .then(data => {
+                console.log(data);
+              })
+              .catch(error => {
+                console.error('Fetch error:', error);
+              });
+    }
+  });*/
+</script>
+
+
+
+
+
+
+
+</body>
+</html>
+
+
+
