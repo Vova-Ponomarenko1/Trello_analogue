@@ -1,0 +1,9 @@
+rootProject.name = 'Trello_analogue'
+include 'Trello'
+include 'Trello:Datadase'
+findProject(':Trello:Datadase')?.name = 'Datadase'
+include 'Trello:Domain'
+findProject(':Trello:Domain')?.name = 'Domain'
+include 'Trello:Online_app'
+findProject(':Trello:Online_app')?.name = 'Online_app'
+
