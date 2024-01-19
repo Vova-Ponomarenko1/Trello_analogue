@@ -37,7 +37,7 @@
 
 <div class="container">
   <h2>Create a Trello Board</h2>
-  <form id="trelloForm" method="POST" action="/create">
+  <form id="trelloForm" method="POST" onsubmit="handleFormSubmission(event)">
     <div class="form-group">
       <label for="boardName">Board Name:</label>
       <input type="text" id="boardName" name="boardName" required>
@@ -45,6 +45,33 @@
     <button type="submit">Create Board</button>
   </form>
 </div>
+
+<script>
+  function handleFormSubmission(event) {
+    event.preventDefault();
+
+    const boardName = document.getElementById('boardName').value;
+
+    fetch('/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ boardName: boardName }),
+    })
+            .then(response => response.text())
+            .then(data => {
+              alert("Board created successfully");
+              window.location.href = '/boards/' + data.trim();
+            })
+            .catch(error => {
+              console.error('Error creating board:', error);
+            });
+  }
+
+</script>
+
+
 
 </body>
 </html>
