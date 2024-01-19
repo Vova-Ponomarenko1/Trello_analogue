@@ -57,9 +57,15 @@ public class TaskRepositoryImpl implements TaskRepository {
         String getBoardIdSql = "SELECT board_id FROM columns WHERE column_id = ?";
         Long boardId = jdbcTemplate.queryForObject(getBoardIdSql, Long.class, columnId);
 
-        String createTaskSql = "INSERT INTO tasks (column_id, task_name, task_description, board_id, position) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(createTaskSql, columnId, taskName, description, boardId, 0);
+        String getMaxPositionSql = "SELECT COALESCE(MAX(position), 0) FROM tasks WHERE column_id = ?";
+        int maxPosition = jdbcTemplate.queryForObject(getMaxPositionSql, Integer.class, columnId);
+
+        int newPosition = maxPosition + 1;
+        String createTaskSql = "INSERT INTO tasks (column_id, task_name, task_description, board_id, position) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(createTaskSql, columnId, taskName, description, boardId, newPosition);
     }
+
 
     @Override
     public void deleteTaskById(Long taskId) {
