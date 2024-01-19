@@ -12,8 +12,10 @@
   <h2>Boards</h2>
   <button class="button-create-board" onclick="createBoard()">Create board</button>
   <div th:each="board : ${boards}" class="board" th:attr="data-boardId=${board.id}">
-    <div class="" th:onclick="'loadBoardDetails(\'' + ${board.id} + '\')'">
-      <span th:style="'color: black;'" th:text="${board.boardName}" ></span>
+    <div th:onclick="'loadBoardDetails(\'' + ${board.id} + '\')'">
+      <div class="" >
+        <span th:style="'color: black;'" th:text="${board.boardName}" ></span>
+      </div>
     </div>
     <div class="board-options">
       <button onclick="toggleOptions(this)" th:attr="data-boardId=${board.id}">Options</button>
@@ -47,6 +49,7 @@
 
             })
             .catch(error => {
+              window.location.href = "/boards";
               console.error('Error creating board:', error);
             });
 
@@ -66,12 +69,11 @@
     })
             .then(response => response.json())
             .then(data => {
-              console.log('Server response:', data);
+              reloadPage();
             })
             .catch(error => {
               console.error('Error deleting board:', error);
             });
-    window.location.href = `/boards`;
   }
 
 
@@ -81,7 +83,6 @@
 
     if (newName !== null) {
       updateNameBoard(boardId, newName);
-      reloadPage();
     }
   }
 
@@ -143,6 +144,7 @@
   <button th:unless="${not #lists.isEmpty(columns)}" onclick="createNewColumn()">Create Column</button>
 </div>
 
+
 <script>
   function openNewTaskForm(columnId) {
     document.getElementById(`taskForm-${columnId}`).style.display = 'block';
@@ -166,18 +168,7 @@
       body: JSON.stringify(formData),
     })
             .then(response => response.json())
-            .then(data => {
-              console.log('Server response:', data);
-
-              fetch(`/boards/${boardId}`)
-                      .then(response => response.text())
-                      .then(html => {
-                        document.getElementById('board-container').innerHTML = html;
-                      })
-                      .catch(error => {
-                        console.error('Error updating board:', error);
-                      });
-            })
+            .then(data => {})
             .catch(error => {
               console.error('Error:', error);
             });
@@ -212,7 +203,8 @@
     })
             .then(response => response.json())
             .then(data => {
-              console.log('Server response:', data);
+              alert(data.message || 'Column created successfully');
+              reloadPage();
             })
             .catch(error => {
               console.error('Error updating column name:', error);
@@ -234,6 +226,7 @@
             .catch(error => {
               console.error('Error deleting column:', error);
             });
+    reloadPage();
   }
 
   function createNewColumn(boardId) {
@@ -252,11 +245,11 @@
        })
        .then(response => response.json())
        .then(data => {
-         console.log('Server response:', data);
+         alert(data.message || 'Column created successfully');
+         reloadPage();
        })
-       .catch(error => {
-         console.error('Error creating column:', error);
-       });
+
+
   }
 
 </script>
@@ -365,9 +358,10 @@
 </script>
 
 <div id="taskPopup" class="popup" th:style="'color: black;'">
-  <button class="delete-task-button" onblur="sendTaskDelete('popupTaskDelete')"></button>
-  <h2 id="popupTaskName"  contenteditable="true" onblur="sendTaskName('popupTaskName')"></h2>
-  <p id="popupTaskDescription"  contenteditable="true" onblur="saveTaskDescription('popupTaskDescription')"></p>
+  <button class="delete-task-button" onblur="sendTaskDelete('popupTaskDelete')">Delete task</button>
+  <h2 id="popupTaskName" contenteditable="true" onblur="sendTaskName('popupTaskName')"></h2>
+  <p id="popupTaskDescription" contenteditable="true" onblur="saveTaskDescription('popupTaskDescription')"></p>
+  <p id="popupTaskCreatedAt"></p>
   <button onclick="closePopup()">Close</button>
 </div>
 
@@ -477,6 +471,9 @@
             .then(data => {
               document.getElementById('popupTaskName').innerText = data.taskName;
               document.getElementById('popupTaskDescription').innerText = data.taskDescription;
+              const createdAt = new Date(data.createdAt);
+              const formattedCreatedAt = createdAt.toISOString().slice(0, 19).replace('T', ' ');
+              document.getElementById('popupTaskCreatedAt').innerText = 'Created at: ' + formattedCreatedAt;
 
               sendTaskName('popupTaskName', taskId);
               saveTaskDescription('popupTaskDescription', taskId);
@@ -499,7 +496,7 @@
   function reloadPage() {
     setTimeout(function () {
       location.reload();
-    }, 100);
+    }, 800);
   }
 </script>
 
