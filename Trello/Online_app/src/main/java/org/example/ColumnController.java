@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,14 +26,18 @@ public class ColumnController {
         this.columnService = columnService;
     }
     @PostMapping("/create/{boardId}")
-    public ResponseEntity<String> createColumn(@PathVariable Long boardId,@RequestBody ColumnRequest columnRequest) {
+    public ResponseEntity<Map<String, String>> createColumn(@PathVariable Long boardId,
+                                                            @RequestBody ColumnRequest columnRequest) {
         try {
-            //Todo дописати
             columnService.createColumn(boardId,columnRequest.getColumnName());
-            return ResponseEntity.ok("Column created successfully");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Column created successfully");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create column");
+            return ResponseEntity.badRequest().body(
+                    Collections.singletonMap("message", "Choose the board in which you wish to create a column. " +
+                            "Additionally, ensure that the column name is a minimum of " +
+                            "3 characters and does not exceed 50 characters"));
         }
     }
     @PostMapping("/boards/synchronize-column-positions")
@@ -39,9 +45,20 @@ public class ColumnController {
         columnRepository.synchronizeColumnPositions(positions);
     }
     @PutMapping("/updateName/{columnId}")
-    public ResponseEntity<String> updateColumnName(@PathVariable int columnId, @RequestBody Map<String, String> data) {
-        columnService.updateColumnName(columnId, data.get("newName"));
-        return ResponseEntity.ok("Column name updated successfully");
+    public ResponseEntity<Map<String, String>> updateColumnName(@PathVariable int columnId,
+                                                                @RequestBody Map<String, String> data) {
+       try {
+           columnService.updateColumnName(columnId, data.get("newName"));
+           Map<String, String> response = new HashMap<>();
+           response.put("message", "Column created successfully");
+           return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    Collections.singletonMap("message", "Choose the board in which you wish to create a column. " +
+                            "Additionally, ensure that the column name is a minimum of " +
+                            "3 characters and does not exceed 50 characters"));
+        }
+
     }
     @DeleteMapping("/delete/{columnId}")
     public ResponseEntity<String> deleteColumn(@PathVariable Long columnId) {
