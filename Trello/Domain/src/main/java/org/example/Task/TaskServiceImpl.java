@@ -11,8 +11,9 @@ public class TaskServiceImpl implements TaskService {
 
     private TaskValidator taskValidator;
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, TaskValidator taskValidator) {
         this.taskRepository = taskRepository;
+        this.taskValidator = taskValidator;
     }
     @Override
     public void updateTaskName(Long taskId, String newTaskName) {
@@ -28,6 +29,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void createTask(Long columnId, String taskName, String description) {
-
+        taskValidator.taskValidateName(taskName);
+        taskValidator.taskValidateDescription(description);
+        taskRepository.createTask(columnId, taskName, description);
     }
 }
