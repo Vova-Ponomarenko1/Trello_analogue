@@ -13,6 +13,7 @@ dependencies {
     implementation project(path: ':Trello:Domain')
     implementation 'org.springframework:spring-context:5.3.13'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc:2.6.3'
+    implementation 'org.flywaydb:flyway-core:9.22.3'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
