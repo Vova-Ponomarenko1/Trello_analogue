@@ -59,13 +59,18 @@
       },
       body: JSON.stringify({ boardName: boardName }),
     })
-            .then(response => response.text())
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Failed to create board');
+              }
+              return response.json();
+            })
             .then(data => {
               alert("Board created successfully");
-              window.location.href = '/boards/' + data.trim();
+              window.location.href = '/boards/' + data.toString();
             })
             .catch(error => {
-              console.error('Error creating board:', error);
+              alert('Invalid board name');
             });
   }
 
