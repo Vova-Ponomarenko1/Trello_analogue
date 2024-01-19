@@ -2,8 +2,10 @@ package org.example;
 
 import org.example.Column.ColumnPositionDTO;
 import org.example.Column.ColumnRepository;
+import org.example.Exception.BoardNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,13 +20,13 @@ public class ColumnRepositoryImpl implements ColumnRepository {
     }
 
     @Override
-    public void createColumn(Long boardId, String columnName) {
+    public void createColumn(Long boardId, String columnName) throws BoardNotFoundException {
         try {
             String createColumnQuery = "INSERT INTO columns (column_name, position, board_id) VALUES (?, 0, ?)";
             jdbcTemplate.update(createColumnQuery, columnName, boardId);
-        } catch (DataAccessException e) {
+        } catch (DataIntegrityViolationException e) {
             e.printStackTrace();
-            throw new RuntimeException("Failed to create column", e);
+            throw new BoardNotFoundException("Failed to create column", e);
         }
     }
 
