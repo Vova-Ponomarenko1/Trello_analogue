@@ -17,12 +17,13 @@ public class BoardServiceImpl implements BoardService {
     }
     @Override
     public void createBoard(String name) {
-        //boardValidator.BoardValidators(name);
+        boardValidator.boardValidators(name);
         boardRepository.createBoard(name);
     }
 
     @Override
     public void reNameBoard(Long boardId, String newName) {
+        boardValidator.boardValidators(newName);
         boardRepository.reNameBoard(boardId, newName);
     }
 
