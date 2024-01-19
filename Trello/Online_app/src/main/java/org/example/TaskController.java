@@ -1,9 +1,6 @@
 package org.example;
 
-import org.example.Task.Task;
-import org.example.Task.TaskPositionDTO;
-import org.example.Task.TaskRepository;
-import org.example.Task.TaskUpdateRequest;
+import org.example.Task.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +12,15 @@ import java.util.List;
 @RequestMapping("/api/task")
 public class TaskController {
     private TaskRepository taskRepository;
+    private TaskService taskService;
     @Autowired
-    public TaskController(TaskRepository taskRepository) {
+    public TaskController(TaskRepository taskRepository, TaskService taskService) {
         this.taskRepository = taskRepository;
+        this.taskService = taskService;
     }
 
     @GetMapping("/{taskId}")
     public ResponseEntity<Task> getTaskDetails(@PathVariable Long taskId) {
-       // TODO Помінять репозиторій
         Task task = taskRepository.getTaskDetails(taskId);
         if (task != null) {
             return new ResponseEntity<>(task, HttpStatus.OK);
@@ -32,19 +30,20 @@ public class TaskController {
     }
     @PutMapping("/{taskId}/name")
     public ResponseEntity<String> updateTaskName(@PathVariable Long taskId, @RequestBody TaskUpdateRequest request) {
-        System.out.println(request.getTaskName());
-        taskRepository.updateTaskName(taskId, request.getTaskName());
+        taskService.updateTaskName(taskId, request.getTaskName());
 
         return ResponseEntity.ok("Task name updated successfully");
     }
     @PutMapping("/{taskId}/description")
-    public ResponseEntity<String> updateTaskDescription(@PathVariable Long taskId, @RequestBody TaskUpdateRequest request) {
-        taskRepository.updateTaskDescription(taskId, request.getTaskDescription());
+    public ResponseEntity<String> updateTaskDescription(@PathVariable Long taskId,
+                                                        @RequestBody TaskUpdateRequest request) {
+        taskService.updateTaskDescription(taskId, request.getTaskDescription());
         return ResponseEntity.ok("Task description updated successfully");
     }
     @PostMapping("/create/{columnId}")
-    public ResponseEntity<String> createTask(@PathVariable Long columnId, @RequestBody TaskUpdateRequest taskRequest) {
-        taskRepository.createTask(columnId, taskRequest.getTaskName(), taskRequest.getTaskDescription());
+    public ResponseEntity<String> createTask(@PathVariable Long columnId,
+                                             @RequestBody TaskUpdateRequest taskRequest) {
+        taskService.createTask(columnId, taskRequest.getTaskName(), taskRequest.getTaskDescription());
 
         return ResponseEntity.ok("Task created successfully");
     }
