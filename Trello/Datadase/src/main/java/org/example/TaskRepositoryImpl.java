@@ -30,7 +30,6 @@ public class TaskRepositoryImpl implements TaskRepository {
     @Override
     public Task getTaskDetails(Long taskId) {
         String sql = "SELECT task_name, task_description, created_at FROM tasks WHERE task_id = ?";
-        // Todo поправити тип та час
         return jdbcTemplate.queryForObject(sql, new Object[]{taskId}, (resultSet, rowNum) -> {
             Task task = new Task();
             task.setTaskId(Math.toIntExact(taskId));
@@ -59,7 +58,7 @@ public class TaskRepositoryImpl implements TaskRepository {
         Long boardId = jdbcTemplate.queryForObject(getBoardIdSql, Long.class, columnId);
 
         String createTaskSql = "INSERT INTO tasks (column_id, task_name, task_description, board_id, position) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(createTaskSql, columnId, taskName, description, boardId, 0);  // Виберіть правильну початкову позицію (position)
+        jdbcTemplate.update(createTaskSql, columnId, taskName, description, boardId, 0);
     }
 
     @Override
