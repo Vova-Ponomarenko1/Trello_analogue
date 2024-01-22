@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
   <script src="/static/JavaScript/BoardJs.js"></script>
   <script src="/static/JavaScript/ColumnScript.js"></script>
@@ -97,7 +97,6 @@
       </div>
     </div>
   </div>
-  <button th:unless="${not #lists.isEmpty(columns)}" onclick="createNewColumn()">Create Column</button>
 </div>
 
 <div id="taskPopup" class="popup" th:style="'color: black;'">
