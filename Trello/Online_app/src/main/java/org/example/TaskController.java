@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.Exception.TaskValidateException;
 import org.example.Task.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,6 @@ public class TaskController {
     @PutMapping("/{taskId}/name")
     public ResponseEntity<String> updateTaskName(@PathVariable Long taskId, @RequestBody TaskUpdateRequest request) {
         taskService.updateTaskName(taskId, request.getTaskName());
-
         return ResponseEntity.ok("Task name updated successfully");
     }
     @PutMapping("/{taskId}/description")
@@ -43,9 +43,12 @@ public class TaskController {
     @PostMapping("/create/{columnId}")
     public ResponseEntity<String> createTask(@PathVariable Long columnId,
                                              @RequestBody TaskUpdateRequest taskRequest) {
-        taskService.createTask(columnId, taskRequest.getTaskName(), taskRequest.getTaskDescription());
-
-        return ResponseEntity.ok("Task created successfully");
+        try {
+            taskService.createTask(columnId, taskRequest.getTaskName(), taskRequest.getTaskDescription());
+            return ResponseEntity.ok("Task created successfully");
+        } catch (TaskValidateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid task data");
+        }
     }
     @PostMapping("/boards/synchronize-task-positions")
     public ResponseEntity<String> synchronizeTaskPositions(@RequestBody List<TaskPositionDTO> taskPositions) {
