@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class TaskValidatorTest {
+class TaskValidatorTest {
 
     private TaskValidator taskValidator;
 
@@ -17,41 +17,41 @@ public class TaskValidatorTest {
     }
 
     @Test
-    public void testValidName() {
+    void testValidName() {
         taskValidator.taskValidateName("ValidName");
     }
 
     @Test
-    public void testNullName() {
+    void testNullName() {
         assertThrows(TaskValidateException.class,
                 () -> taskValidator.taskValidateName(null));
     }
 
     @Test
-    public void testEmptyName() {
+    void testEmptyName() {
         assertThrows(TaskValidateException.class,
                 () -> taskValidator.taskValidateName(""));
     }
 
     @Test
-    public void testLongName() {
+    void testLongName() {
         assertThrows(TaskValidateException.class,
                 () -> taskValidator.taskValidateName("a".repeat(46)));
     }
 
     @Test
-    public void testValidDescription() {
+    void testValidDescription() {
         taskValidator.taskValidateDescription("ValidDescription");
     }
 
     @Test
-    public void testNullDescription() {
+    void testNullDescription() {
         assertThrows(TaskValidateException.class,
                 () -> taskValidator.taskValidateDescription(null));
     }
 
     @Test
-    public void testLongDescription() {
+    void testLongDescription() {
         assertThrows(TaskValidateException.class,
                 () -> taskValidator.taskValidateDescription("a".repeat(1001)));
     }

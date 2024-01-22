@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class BoardValidatorTest {
+class BoardValidatorTest {
 
     private BoardValidator boardValidator;
 
@@ -17,30 +17,30 @@ public class BoardValidatorTest {
     }
 
     @Test
-    public void testValidName() {
+    void testValidName() {
         boardValidator.boardValidators("ValidName");
     }
 
     @Test
-    public void testNullName() {
+    void testNullName() {
         assertThrows(BoardInvalidNameException.class,
                 () -> boardValidator.boardValidators(null));
     }
 
     @Test
-    public void testEmptyName() {
+    void testEmptyName() {
         assertThrows(BoardInvalidNameException.class,
                 () -> boardValidator.boardValidators(""));
     }
 
     @Test
-    public void testShortName() {
+    void testShortName() {
         assertThrows(BoardInvalidNameException.class,
                 () -> boardValidator.boardValidators("ab"));
     }
 
     @Test
-    public void testLongName() {
+    void testLongName() {
         assertThrows(BoardInvalidNameException.class,
                 () -> boardValidator.boardValidators("a".repeat(51)));
     }

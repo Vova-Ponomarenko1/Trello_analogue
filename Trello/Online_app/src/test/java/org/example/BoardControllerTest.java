@@ -1,10 +1,12 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Board.Board;
 import org.example.Board.BoardRepository;
 import org.example.Board.BoardService;
 import org.example.Column.Column;
 import org.example.Exception.BoardInvalidNameException;
+import org.example.Task.TaskUpdateRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
@@ -22,7 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class BoardControllerTest {
+class BoardControllerTest {
 
     private MockMvc mockMvc;
 
@@ -42,14 +44,14 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testGetCreateBoardPage() throws Exception {
+    void testGetCreateBoardPage() throws Exception {
         mockMvc.perform(get("/boards"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("CreateBoard"));
     }
 
     @Test
-    public void testGetTasksAndColumnsForBoard() throws Exception {
+    void testGetTasksAndColumnsForBoard() throws Exception {
         int boardId = 1;
 
         List<List<Column>> mockColumns = new ArrayList<>();
@@ -68,7 +70,7 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testGetTasksAndColumnsForBoardRedirect() throws Exception {
+    void testGetTasksAndColumnsForBoardRedirect() throws Exception {
         int boardId = 1;
 
         when(boardRepository.getAllBoardIds()).thenReturn(new ArrayList<>());
@@ -79,7 +81,7 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testCreateBoard() throws Exception {
+    void testCreateBoard() throws Exception {
         when(boardRepository.getRandomBoardId()).thenReturn(123L);
 
         Map<String, String> requestData = new HashMap<>();
@@ -95,7 +97,7 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testUpdateBoardName() throws Exception {
+    void testUpdateBoardName() throws Exception {
         doNothing().when(boardService).reNameBoard(1L, "New Name");
 
         mockMvc.perform(put("/updateNameBoard/{boardId}", 1)
@@ -108,7 +110,7 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testCreateBoardFailure() throws Exception {
+    void testCreateBoardFailure() throws Exception {
         doThrow(new RuntimeException("Board creation failed")).when(boardService).createBoard(anyString());
 
         Map<String, String> requestData = new HashMap<>();
@@ -122,7 +124,7 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testUpdateBoardNameFailure() throws Exception {
+    void testUpdateBoardNameFailure() throws Exception {
         doThrow(new BoardInvalidNameException("Invalid name")).when(boardService)
                 .reNameBoard(1L, "New Name");
 
@@ -134,7 +136,7 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testDeleteBoardSuccess() throws Exception {
+    void testDeleteBoardSuccess() throws Exception {
         doNothing().when(boardRepository).deleteBoard(1L);
 
         mockMvc.perform(delete("/delete/{boardId}", 1))

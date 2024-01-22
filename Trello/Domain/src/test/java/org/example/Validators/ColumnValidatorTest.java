@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ColumnValidatorTest {
+class ColumnValidatorTest {
 
     private ColumnValidator columnValidator;
 
@@ -16,31 +16,30 @@ public class ColumnValidatorTest {
     }
 
     @Test
-    public void testValidName() {
-
+    void testValidName() {
         columnValidator.columnValidateName("ValidName");
     }
 
     @Test
-    public void testNullName() {
+    void testNullName() {
         assertThrows(ColumnValidateException.class,
                 () -> columnValidator.columnValidateName(null));
     }
 
     @Test
-    public void testEmptyName() {
+    void testEmptyName() {
         assertThrows(ColumnValidateException.class,
                 () -> columnValidator.columnValidateName(""));
     }
 
     @Test
-    public void testShortName() {
+    void testShortName() {
         assertThrows(ColumnValidateException.class,
                 () -> columnValidator.columnValidateName("ab"));
     }
 
     @Test
-    public void testLongName() {
+    void testLongName() {
         assertThrows(ColumnValidateException.class,
                 () -> columnValidator.columnValidateName("a".repeat(46)));
     }

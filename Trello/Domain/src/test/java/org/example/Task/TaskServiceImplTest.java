@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class TaskServiceImplTest {
+class TaskServiceImplTest {
 
     @Mock
     private TaskRepository taskRepository;
@@ -29,7 +29,7 @@ public class TaskServiceImplTest {
     }
 
     @Test
-    public void testUpdateTaskName_ValidName() {
+    void testUpdateTaskName_ValidName() {
         Long taskId = 1L;
         String newTaskName = "NewTaskName";
 
@@ -40,7 +40,7 @@ public class TaskServiceImplTest {
     }
 
     @Test
-    public void testUpdateTaskNameWithNullName() {
+    void testUpdateTaskNameWithNullName() {
         Long taskId = 1L;
         String newTaskName = null;
 
@@ -52,7 +52,7 @@ public class TaskServiceImplTest {
     }
 
     @Test
-    public void testUpdateTaskDescription() {
+    void testUpdateTaskDescription() {
         Long taskId = 1L;
         String description = "NewDescription";
 
@@ -63,7 +63,7 @@ public class TaskServiceImplTest {
     }
 
     @Test
-    public void testCreateTask() {
+    void testCreateTask() {
         Long columnId = 1L;
         String taskName = "TaskName";
         String description = "TaskDescription";

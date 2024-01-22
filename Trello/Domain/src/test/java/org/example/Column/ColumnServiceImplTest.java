@@ -13,7 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Mockito.*;
 
-public class ColumnServiceImplTest {
+class ColumnServiceImplTest {
 
     @Mock
     private ColumnRepository columnRepository;
