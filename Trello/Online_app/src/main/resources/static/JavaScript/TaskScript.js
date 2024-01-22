@@ -4,8 +4,8 @@ function openTaskDetails(taskId) {
         .then(data => {
             document.getElementById('popupTaskName').innerText = data.taskName;
             document.getElementById('popupTaskDescription').innerText = data.taskDescription;
-            const createdAt = new Date(data.createdAt);
-            const formattedCreatedAt = createdAt.toISOString().slice(0, 19).replace('T', ' ');
+            const createdAt = moment(data.createdAt);
+            const formattedCreatedAt = createdAt.format('YYYY-MM-DD HH:mm:ss');
             document.getElementById('popupTaskCreatedAt').innerText = 'Created at: ' + formattedCreatedAt;
 
             sendTaskName('popupTaskName', taskId);
