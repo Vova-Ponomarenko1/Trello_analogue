@@ -9,6 +9,20 @@ public class Task {
     private String taskDescription;
     private Timestamp createdAt;
 
+    public Task(int taskId, int columnId, String taskName, String taskDescription, Timestamp createdAt) {
+        this.taskId = taskId;
+        this.columnId = columnId;
+        this.taskName = taskName;
+        this.taskDescription = taskDescription;
+        this.createdAt = createdAt;
+    }
+
+    public Task() {
+    }
+
+    public Task(String taskName, String taskDescription, Timestamp valueOf) {
+    }
+
     public int getTaskId() {
         return taskId;
     }
